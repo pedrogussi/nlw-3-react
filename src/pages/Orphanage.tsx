@@ -1,21 +1,59 @@
 /* eslint-disable prettier/prettier */
 
-import React from 'react';
+import React, { useState,useEffect } from 'react';
 import { FaWhatsapp } from 'react-icons/fa';
 import { FiClock } from 'react-icons/fi';
 import { MapContainer, Marker, TileLayer } from 'react-leaflet';
+import {useParams} from 'react-router-dom';
 
+
+
+import Sidebar from '../components/Sidebar';
+import mapIcon from '../utils/mapIcon';
+import api from '../services/api';
 
 
 import '../styles/pages/orphanage.css';
-import Sidebar from '../components/Sidebar';
-import mapIcon from '../utils/mapIcon';
 
+interface OrphanagePrp {
+  latitude: number;
+  longitude: number;
+  name: string;
+  about: string;
+  instructions: string;
+  opening_hours: string;
+  open_on_weekends: string;
+  images: [
+    {
+      url: string;
+    }
+  ]
+}
 
-
+interface RootParams {
+  id: string;
+}
 
 export default function Orphanage() {
+  const params = useParams<RootParams>();
+  const [orphanage, setOrphanage] = useState<OrphanagePrp>();
 
+//  console.log(orphanage?.images);
+
+  useEffect(() => {
+    api.get(`orphanages/${params.id}`).then(response => {
+      setOrphanage(response.data);
+
+    });
+  }, [params.id]);
+
+
+
+  if (!orphanage) {
+    return (
+      <p>Carregando ....</p>
+    )
+  }
 
   return (
     <div id="page-orphanage">
@@ -25,7 +63,7 @@ export default function Orphanage() {
       <main>
         <div className="orphanage-details">
           <img
-            src="https://www.google.com.br/url?sa=i&url=https%3A%2F%2Fntpda.typepad.com%2F.a%2F6a0192ac854ee5970d01b8d25ac383970c-popup&psig=AOvVaw3ZktwRt6iloqwSgcKKt-0a&ust=1607091486181000&source=images&cd=vfe&ved=0CAIQjRxqFwoTCNDTq76Asu0CFQAAAAAdAAAAABAD"
+            src={orphanage.images[0].url[0]}
             alt="Kids"
           />
           <div className="images">
@@ -67,8 +105,8 @@ export default function Orphanage() {
             </button>
           </div>
           <div className="orphanage-details-content">
-            <h1>Orfanato 1</h1>
-            <p>Descricao</p>
+            <h1>{orphanage.name}</h1>
+            <p>{orphanage.about}</p>
 
             <div className="map-container">
               <MapContainer
